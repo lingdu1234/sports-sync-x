@@ -7,8 +7,9 @@ on:
 
 env:
   GITHUB_NAME: lingdu
-  GITHUB_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+  GITHUB_EMAIL: ${{ secrets.COROS_EMAIL }}
   ## 同步设置
+  SYNC_PLATFORM: ${{ secrets.SYNC_PLATFORM }}
   ## Garmin 配置
   GARMIN_EMAIL_COM: ${{ secrets.GARMIN_EMAIL_COM }}
   GARMIN_PASSWORD_COM: ${{ secrets.GARMIN_PASSWORD_COM }}
