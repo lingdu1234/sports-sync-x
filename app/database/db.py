@@ -1,4 +1,3 @@
-from enum import Enum
 from sqlalchemy import create_engine, event
 from datetime import datetime as dt
 
@@ -7,7 +6,6 @@ from sqlmodel import Field, SQLModel
 from app.utils.sys_config import cfg
 from app.utils.tools import check_path, format_datetime
 
-cfg = cfg
 check_path(cfg.DB_DIR)
 db_path = os.path.join(cfg.DB_DIR, cfg.DB_NAME)
 engine = create_engine(
@@ -51,9 +49,3 @@ def receive_before_update(mapper, connection, target: SportActivity):
     """
     # 直接使用update 不会监听到，不会更新
     target.updated_at = format_datetime(dt.now())
-
-
-class SportPlatform(Enum):
-    garminCOM = "garminCOM"
-    garminCN = "garminCN"
-    coros = "coros"

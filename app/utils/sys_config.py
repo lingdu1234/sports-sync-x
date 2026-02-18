@@ -1,3 +1,4 @@
+from app.utils.const import SportPlatform
 from app.utils.tools import check_path, Singleton
 import os
 
@@ -41,19 +42,19 @@ class SysConfig:
     DB_NAME = "sports_sync.sqlite"
 
     def check_cfg(self) -> bool:
-        if "GARMIN" in self.SYNC_PLATFORM:
+        if SportPlatform.garminCOM.value.upper() in self.SYNC_PLATFORM.upper():
             if check_null(self.GARMIN_EMAIL_COM) or check_null(
                 self.GARMIN_PASSWORD_COM
             ):
                 return False
             else:
                 check_path(self.GARMIN_FIT_DIR_COM)
-        if "GARMIN_CN" in self.SYNC_PLATFORM:
+        if SportPlatform.garminCN.value.upper() in self.SYNC_PLATFORM.upper():
             if check_null(self.GARMIN_EMAIL_CN) or check_null(self.GARMIN_PASSWORD_CN):
                 return False
             else:
                 check_path(self.GARMIN_FIT_DIR_CN)
-        if "COROS" in self.SYNC_PLATFORM:
+        if SportPlatform.coros.value.upper() in self.SYNC_PLATFORM.upper():
             if check_null(self.COROS_EMAIL) or check_null(self.COROS_EMAIL):
                 return False
             else:

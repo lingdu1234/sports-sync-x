@@ -1,8 +1,9 @@
+from app.utils.const import SportPlatform
 from app.utils.sys_config import cfg
 from app.utils.tools import get_datetime, format_datetime
 from sqlmodel import select, and_, Session, col, update
 from typing import Sequence
-from app.database.db import SportActivity, SportPlatform, engine
+from app.database.db import SportActivity, engine
 from datetime import datetime as dt, timedelta
 
 
@@ -20,7 +21,7 @@ def is_exist_x(activity: SportActivity) -> tuple[bool, bool]:
         else dt.now()
     )
 
-    diff = int(cfg.SPORT_DIFF_SECOND != 0)
+    diff = int(cfg.SPORT_DIFF_SECOND)
     stmt = (
         (
             select(SportActivity)
@@ -101,7 +102,7 @@ def getUnSyncActivites(platform: SportPlatform) -> Sequence[SportActivity]:
     """
     with Session(engine) as session:
         stmt = select(SportActivity).where(
-            col(SportActivity.is_sync).not_like(f"%{platform.value}&")
+            col(SportActivity.is_sync).not_like(f"%{platform.value}%")
         )
         data = session.exec(stmt).all()
         return data
@@ -154,7 +155,7 @@ def getSyncedActivities(activity: SportActivity) -> Sequence[SportActivity]:
         else dt.now()
     )
 
-    diff = int(cfg.SPORT_DIFF_SECOND != 0)
+    diff = int(cfg.SPORT_DIFF_SECOND)
     stmt = (
         (
             select(SportActivity).where(

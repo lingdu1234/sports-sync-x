@@ -67,16 +67,21 @@ def get_device_from_fit(file_path: str) -> Optional[str]:
 
 
 @staticmethod
-def extract_all_from_zip(zip_path: str, extract_dir: str | None = None):
+def extract_all_from_zip(zip_path: str, extract_dir: str | None = None) -> str | None:
     try:
         if not os.path.exists(zip_path):
             return
 
         if extract_dir is None:
             extract_dir = os.path.dirname(zip_path)
-
+        extracted_files = []
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(extract_dir)
+            for file_info in zip_ref.filelist:
+                extracted_file = os.path.join(extract_dir, file_info.filename)
+                if os.path.exists(extracted_file):
+                    extracted_files.append(extracted_file)
+        return extracted_files[0]
     except Exception as e:
         print(f"Error extracting all from ZIP {zip_path}: {e}")
-        return
+        return None

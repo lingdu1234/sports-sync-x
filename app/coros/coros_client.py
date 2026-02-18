@@ -83,6 +83,7 @@ class CorosClient:
         try:
             response = self.req.request(method="GET", url=delete_url, headers=headers)
             if response.status == 200:
+                print(response.data)
                 print(f"删除activity成功:{id}")
             else:
                 print(f"删除activity出错:{id}")
@@ -162,7 +163,7 @@ class CorosClient:
                 size,
             )
             if upload_result:
-                print(f"* ✓ 已同步 Garmin 活动 {un_sync_id}")
+                print(f"✓ 已同步 Garmin 活动 {un_sync_id}")
                 return True
             else:
                 return False

@@ -4,10 +4,10 @@ import os
 
 from app.utils.fit_parser import extract_all_from_zip
 from app.utils.sys_config import cfg
-from app.database.db import SportActivity, SportPlatform
+from app.database.db import SportActivity
 from typing import Dict
 from app.database.db_api import getUnSyncActivites, setActivitySynced
-from app.utils.const import get_coros_sport_type
+from app.utils.const import SportPlatform, get_coros_sport_type
 from datetime import datetime as dt
 
 from app.utils.tools import (
@@ -118,43 +118,72 @@ def sync_to_platform(platform: SportPlatform):
         file_path = ""
         match un_sync_activity.platform:
             case SportPlatform.garminCOM.value:
-                if download_garmin_activity_fn(un_sync_activity):
-                    file_path = os.path.join(
-                        cfg.GARMIN_FIT_DIR_COM,
-                        f"{un_sync_activity.activity_id}_ACTIVITY.fit",
-                    )
+                f_path = os.path.join(
+                    cfg.GARMIN_FIT_DIR_COM,
+                    f"{un_sync_activity.activity_id}.zip",
+                )
+                if os.path.exists(f_path):
+                    f = extract_all_from_zip(f_path)
+                    file_path = f if f is not None else ""
+                else:
+                    f = download_garmin_activity_fn(un_sync_activity)
+                    file_path = f if f is not None else ""
             case SportPlatform.garminCN.value:
-                if download_garmin_activity_fn(un_sync_activity):
-                    file_path = os.path.join(
-                        cfg.GARMIN_FIT_DIR_CN,
-                        f"{un_sync_activity.activity_id}_ACTIVITY.fit",
-                    )
+                f_path = os.path.join(
+                    cfg.GARMIN_FIT_DIR_CN,
+                    f"{un_sync_activity.activity_id}.zip",
+                )
+                if os.path.exists(f_path):
+                    f = extract_all_from_zip(f_path)
+                    file_path = f if f is not None else ""
+                else:
+                    f = download_garmin_activity_fn(un_sync_activity)
+                    file_path = f if f is not None else ""
             case SportPlatform.coros.value:
-                if download_coros_activity_fn(un_sync_activity):
-                    file_path = os.path.join(
-                        cfg.COROS_FIT_DIR,
-                        f"{un_sync_activity.activity_id}.fit",
-                    )
+                f_path = os.path.join(
+                    cfg.COROS_FIT_DIR,
+                    f"{un_sync_activity.activity_id}.fit",
+                )
+                if os.path.exists(f_path):
+                    file_path = f_path
+                else:
+                    if download_coros_activity_fn(un_sync_activity):
+                        file_path = f_path
         # 上传
         if file_path == "":
             print(f"{un_sync_activity.activity_id}文件不存在，无法同步")
         else:
-            match platform:
-                case SportPlatform.garminCOM | SportPlatform.garminCN:
-                    client = get_garmin_client(platform)
-                    if client.uploadActivity(file_path):
-                        setActivitySynced(un_sync_activity, platform.value, True)
-                    else:
-                        setActivitySynced(un_sync_activity, platform.value, False)
-                case SportPlatform.coros:
-                    client = get_coros_client()
-                    if client.uploadActivity(file_path, un_sync_activity.activity_id):
-                        setActivitySynced(un_sync_activity, platform.value, True)
-                    else:
-                        setActivitySynced(un_sync_activity, platform.value, False)
+            if os.path.exists(file_path):
+                match platform:
+                    case SportPlatform.garminCOM | SportPlatform.garminCN:
+                        client = get_garmin_client(platform)
+                        if client.uploadActivity(file_path):
+                            setActivitySynced(un_sync_activity, platform.value, True)
+                        else:
+                            setActivitySynced(un_sync_activity, platform.value, False)
+                    case SportPlatform.coros:
+                        client = get_coros_client()
+                        if un_sync_activity.platform == SportPlatform.garminCN.value:
+                            file_path = os.path.join(
+                                cfg.GARMIN_FIT_DIR_CN,
+                                f"{un_sync_activity.activity_id}.zip",
+                            )
+                        if un_sync_activity.platform == SportPlatform.garminCOM.value:
+                            file_path = os.path.join(
+                                cfg.GARMIN_FIT_DIR_COM,
+                                f"{un_sync_activity.activity_id}.zip",
+                            )
+                        if client.uploadActivity(
+                            file_path, un_sync_activity.activity_id
+                        ):
+                            setActivitySynced(un_sync_activity, platform.value, True)
+                        else:
+                            setActivitySynced(un_sync_activity, platform.value, False)
+            else:
+                print(f"{file_path}文件不存在，将无法同步")
 
 
-def download_garmin_activity_fn(activity: SportActivity) -> bool:
+def download_garmin_activity_fn(activity: SportActivity) -> str | None:
     id = activity.activity_id
     FIT_DIR, client = (
         (cfg.GARMIN_FIT_DIR_COM, get_garmin_client(SportPlatform.garminCOM))
@@ -168,11 +197,10 @@ def download_garmin_activity_fn(activity: SportActivity) -> bool:
         with open(zip_file_path, "wb") as fb:
             fb.write(file)
         # 解压文件
-        extract_all_from_zip(zip_file_path)
-        return True
-    except Exception:
-        print(f"* ✗ 下载 Garmin 活动 {id} 失败")
-        return False
+        return extract_all_from_zip(zip_file_path)
+    except Exception as e:
+        print(f"✗ 下载 {activity.platform} 活动 {id} 失败:{e}")
+        return None
 
 
 def download_coros_activity_fn(activity: SportActivity) -> bool:

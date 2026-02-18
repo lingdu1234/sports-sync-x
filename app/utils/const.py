@@ -1,5 +1,12 @@
 from enum import Enum
 
+
+class SportPlatform(Enum):
+    garminCOM = "garminCOM"
+    garminCN = "garminCN"
+    coros = "coros"
+
+
 GARMIN_SPORT_TYPE_MAP = {
     1: ("running", "跑步"),
     2: ("cycling", "骑行"),

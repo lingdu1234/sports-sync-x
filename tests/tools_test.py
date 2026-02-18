@@ -1,6 +1,6 @@
-from app.coros.coros_client import CorosClient
-from app.database.db import SportPlatform
+from app.coros.coros_client import CorosClient, get_coros_client
 from app.garmin.garmin_client_x import get_garmin_client
+from app.utils.const import SportPlatform
 from app.utils.tools import format_datetime
 import os
 import unittest
@@ -8,7 +8,7 @@ import unittest
 from app.utils.fit_parser import get_device_from_fit
 from app.utils.sys_config import SysConfig, cfg
 from app.utils.msg_tool import send_message, MsgType
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 
 
 class MyTestCase(unittest.TestCase):
@@ -78,6 +78,16 @@ class MyTestCase(unittest.TestCase):
         a3 = cfg
         print(id(a1), id(a2), id(a3))
         print(id(a1) == id(a2))
+
+    def test_aaa(self):
+        st = dt.now()
+        diff = int(cfg.SPORT_DIFF_SECOND)
+        print(format_datetime(st - timedelta(seconds=diff)))
+        print(format_datetime(st + timedelta(seconds=diff)))
+
+    def test_delete_coros(self):
+        cx = get_coros_client()
+        cx.deleteActivity("475416904796766510")
 
 
 if __name__ == "__main__":

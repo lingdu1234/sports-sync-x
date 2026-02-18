@@ -1,5 +1,4 @@
 from app.utils.tools import Singleton
-from app.database.db import SportPlatform
 from app.utils.sys_config import cfg
 from typing import Any
 import time
@@ -12,7 +11,7 @@ import requests
 from garth import Client as gmClient
 #  不要直接使用garth 要使用Client,否则两个数据会串
 
-from app.utils.const import GARMIN_URL_DICT, GarminAuthDomain
+from app.utils.const import GARMIN_URL_DICT, GarminAuthDomain, SportPlatform
 
 
 class GarminClient:
@@ -59,7 +58,7 @@ class GarminClient:
         if self.auth_domain and self.auth_domain == GarminAuthDomain.CN:
             self.garthClient.configure(domain="garmin.cn")
         self.garthClient.login(self.email, self.password)
-        # del self.garthClient.client.sess.headers["User-Agent"]
+        del self.garthClient.sess.headers["User-Agent"]
         # garth.save(session_path)
         self.garthClient.dump(session_path)
 

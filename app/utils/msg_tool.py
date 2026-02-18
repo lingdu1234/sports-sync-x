@@ -21,7 +21,6 @@ def send_message(content: str, msg_type: MsgType = MsgType.TEXT) -> dict:
         响应结果
     """
     # 获取企业微信机器人密钥
-    cfg = cfg
     bot_key = cfg.QYWX_BOT_KEY
     if not bot_key:
         return {"error": "QYWX_BOT_KEY not configured"}
