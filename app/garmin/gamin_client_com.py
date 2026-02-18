@@ -55,7 +55,7 @@ class GarminClientCOM:
         if self.auth_domain and self.auth_domain == GarminAuthDomain.CN:
             self.garthClient.configure(domain="garmin.cn")
         self.garthClient.login(self.email, self.password)
-        del self.garthClient.client.sess.headers["User-Agent"]
+        # del self.garthClient.client.sess.headers["User-Agent"]
         garth.save(session_path)
 
     @login
