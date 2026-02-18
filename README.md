@@ -168,6 +168,23 @@ sports-sync-x/
 - 确认 `DELETE_DUPLICATE=1` 已正确配置
 - 检查 `SPORT_DIFF_SECOND` 阈值设置是否合理
 
+## 致谢
+
+本项目的部分代码参考和使用了以下开源项目：
+
+- **[garmin-sync-coros](https://github.com/XiaoSiHwang/garmin-sync-coros)** - 感谢 @XiaoSiHwang 提供的 Garmin 和 Coros 平台同步代码
+- **[running_page](https://github.com/yihong0618/running_page)** - 感谢 @yihong0618 大佬的无私奉献，本项目的 Garmin 模块代码参考了该项目
+
+同时感谢以下开源库的支持：
+
+- **[garth](https://github.com/matin/garth)** - Garmin Connect API 客户端
+- **[SQLModel](https://github.com/tiangolo/sqlmodel)** - Python SQL ORM
+- **[fitdecode](https://github.com/polyvertex/fitdecode)** - FIT 文件解码库
+- **[boto3](https://github.com/boto/boto3)** - AWS SDK for Python
+- **[oss2](https://github.com/aliyun/aliyun-oss-python-sdk)** - 阿里云 OSS SDK for Python
+- **[requests](https://github.com/psf/requests)** - Python HTTP 库
+- **[python-dotenv](https://github.com/theskumar/python-dotenv)** - 从 .env 文件读取环境变量
+
 ## 许可证
 
 MIT License

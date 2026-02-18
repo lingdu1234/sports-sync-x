@@ -168,6 +168,23 @@ For complete sport type mapping, please refer to [app/utils/const.py](app/utils/
 - Confirm that `DELETE_DUPLICATE=1` is configured correctly
 - Check if the `SPORT_DIFF_SECOND` threshold setting is reasonable
 
+## Acknowledgments
+
+This project references and uses code from the following open-source projects:
+
+- **[garmin-sync-coros](https://github.com/XiaoSiHwang/garmin-sync-coros)** - Thanks to @XiaoSiHwang for providing Garmin and Coros platform sync code
+- **[running_page](https://github.com/yihong0618/running_page)** - Thanks to @yihong0618 for their selfless contribution. The Garmin module code in this project references this project
+
+We also thank the following open-source libraries for their support:
+
+- **[garth](https://github.com/matin/garth)** - Garmin Connect API client
+- **[SQLModel](https://github.com/tiangolo/sqlmodel)** - Python SQL ORM
+- **[fitdecode](https://github.com/polyvertex/fitdecode)** - FIT file decoder library
+- **[boto3](https://github.com/boto/boto3)** - AWS SDK for Python
+- **[oss2](https://github.com/aliyun/aliyun-oss-python-sdk)** - Alibaba Cloud OSS SDK for Python
+- **[requests](https://github.com/psf/requests)** - Python HTTP library
+- **[python-dotenv](https://github.com/theskumar/python-dotenv)** - Read environment variables from .env file
+
 ## License
 
 MIT License
