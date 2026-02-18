@@ -1,7 +1,7 @@
 from enum import Enum
 
 import requests
-from app.utils.sys_config import sysConfig
+from app.utils.sys_config import cfg
 
 
 class MsgType(Enum):
@@ -21,7 +21,7 @@ def send_message(content: str, msg_type: MsgType = MsgType.TEXT) -> dict:
         响应结果
     """
     # 获取企业微信机器人密钥
-    cfg = sysConfig
+    cfg = cfg
     bot_key = cfg.QYWX_BOT_KEY
     if not bot_key:
         return {"error": "QYWX_BOT_KEY not configured"}

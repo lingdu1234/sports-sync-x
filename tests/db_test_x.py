@@ -1,5 +1,5 @@
 from sqlalchemy import update
-from sqlmodel import Session, delete, select, col, and_
+from sqlmodel import Session, delete, select, col, and_, not_
 from app.database.db_api import getUnSyncActivites, getAllActivities
 from app.database.db import engine, SportActivity, SportPlatform, Base
 from typing import Sequence
@@ -23,12 +23,12 @@ class DbTest(unittest.TestCase):
     def test_db_add2(self):
         data1 = SportActivity(
             activity_id="ere2323tretre",
-            platform=SportPlatform.garmin.value,
+            platform=SportPlatform.garminCN.value,
             sport_type="1",
         )
         data2 = SportActivity(
             activity_id="3242354sefs",
-            platform=SportPlatform.garmin.value,
+            platform=SportPlatform.garminCN.value,
             sport_type="1",
         )
         data3 = SportActivity(
@@ -48,8 +48,8 @@ class DbTest(unittest.TestCase):
             data.is_sync = "5"
             # data.updated_at = format_datetime(dt.now())
             session.commit()
-            session.refresh(data)
-            print(data)
+            # session.refresh(data)
+            # print(data)
 
     def test_select(self):
         with Session(engine) as session:
@@ -57,8 +57,12 @@ class DbTest(unittest.TestCase):
                 select(SportActivity)
                 .where(
                     and_(
-                        col(SportActivity.platform) == SportPlatform.garmin.value,
-                        col(SportActivity.is_sync).not_like(SportPlatform.coros.value),
+                        col(SportActivity.platform) == SportPlatform.garminCN.value,
+                        not_(
+                            col(SportActivity.is_sync).contains(
+                                SportPlatform.coros.value
+                            )
+                        ),
                     )
                 )
                 .limit(1)
@@ -72,8 +76,10 @@ class DbTest(unittest.TestCase):
         with Session(engine) as session:
             stmt = select(SportActivity).where(
                 and_(
-                    col(SportActivity.platform) == SportPlatform.garmin.value,
-                    col(SportActivity.is_sync).not_like(SportPlatform.coros.value),
+                    col(SportActivity.platform) == SportPlatform.garminCN.value,
+                    not_(
+                        col(SportActivity.is_sync).contains(SportPlatform.coros.value)
+                    ),
                 )
             )
             data = session.exec(stmt).all()
@@ -121,13 +127,13 @@ class DbTest(unittest.TestCase):
             session.commit()
 
     def test_getUnSyncActivites(self):
-        getUnSyncActivites(SportPlatform.garmin, SportPlatform.coros)
+        getUnSyncActivites(SportPlatform.garminCN)
 
     def test_getAllActivites(self):
-        getAllActivities(SportPlatform.garmin)
+        getAllActivities(SportPlatform.garminCN)
 
     def test_enun(self):
-        print(SportPlatform.garmin)
+        print(SportPlatform.garminCN)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+from app.utils.tools import check_path, Singleton
 import os
 
 from dotenv import find_dotenv, load_dotenv
@@ -12,22 +13,55 @@ def get_sys_config(key: str) -> str:
     return v if v else ""
 
 
+@Singleton
 class SysConfig:
+    SYNC_PLATFORM: str = get_sys_config("SYNC_PLATFORM")
+
     GARMIN_EMAIL: str = get_sys_config("GARMIN_EMAIL")
     GARMIN_PASSWORD: str = get_sys_config("GARMIN_PASSWORD")
-    GARMIN_AUTH_DOMAIN: str = get_sys_config("GARMIN_AUTH_DOMAIN")
+
+    GARMIN_EMAIL_CN: str = get_sys_config("GARMIN_EMAIL_CN")
+    GARMIN_PASSWORD_CN: str = get_sys_config("GARMIN_PASSWORD_CN")
+
     GARMIN_NEWEST_NUM: str = get_sys_config("GARMIN_NEWEST_NUM")
 
     COROS_EMAIL: str = get_sys_config("COROS_EMAIL")
     COROS_PASSWORD: str = get_sys_config("COROS_PASSWORD")
+
+    DELETE_DUPLICATE: str = get_sys_config("DELETE_DUPLICATE")
+    SPORT_DIFF_SECOND: str = get_sys_config("SPORT_DIFF_SECOND")
+
     QYWX_BOT_KEY: str = get_sys_config("QYWX_BOT_KEY")
 
     #     系统配置
-    GARMIN_FIT_DIR = os.path.join(work_dir, "garmin-fit")
-    COROS_FIT_DIR = os.path.join(work_dir, "coros-fit")
+    GARMIN_FIT_DIR = os.path.join(work_dir, "fit-garmin")
+    GARMIN_FIT_DIR_CN = os.path.join(work_dir, "fit-garmin")
+    COROS_FIT_DIR = os.path.join(work_dir, "fit-coros")
     DB_DIR = os.path.join(work_dir, "db")
     DB_NAME = "sports_sync.sqlite"
 
+    def check_cfg(self) -> bool:
+        if "GARMIN" in self.SYNC_PLATFORM:
+            if check_null(self.GARMIN_EMAIL) or check_null(self.GARMIN_PASSWORD):
+                return False
+            else:
+                check_path(self.GARMIN_FIT_DIR)
+        if "GARMIN_CN" in self.SYNC_PLATFORM:
+            if check_null(self.GARMIN_EMAIL_CN) or check_null(self.GARMIN_PASSWORD_CN):
+                return False
+            else:
+                check_path(self.GARMIN_FIT_DIR_CN)
+        if "COROS" in self.SYNC_PLATFORM:
+            if check_null(self.COROS_EMAIL) or check_null(self.COROS_EMAIL):
+                return False
+            else:
+                check_path(self.COROS_FIT_DIR)
+        return True
+
+
+def check_null(data: str) -> bool:
+    return data is None or data == ""
+
 
 # 创建全局配置实例（方便其他文件导入使用）
-sysConfig = SysConfig()
+cfg = SysConfig()

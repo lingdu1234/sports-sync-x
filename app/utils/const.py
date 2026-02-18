@@ -1,98 +1,194 @@
+from enum import Enum
+
 GARMIN_SPORT_TYPE_MAP = {
-    1: "running",  # 跑步
-    2: "cycling",  # 骑行
-    3: "swimming",  # 游泳
-    4: "walking",  # 步行
-    5: "hiking",  # 徒步
-    6: "fitness_equipment",  # 健身器材
-    7: "yoga",  # 瑜伽
-    8: "strength_training",  # 力量训练
-    9: "other",  # 其他
-    10: "cardio",  # 有氧
-    11: "elliptical",  # 椭圆机
-    12: "stairs",  # 爬楼梯
-    13: "basketball",  # 篮球
-    14: "soccer",  # 足球
-    15: "tennis",  # 网球
-    16: "golf",  # 高尔夫
-    17: "fitness",  # 健身
-    18: "dancing",  # 舞蹈
-    19: "martial_arts",  # 武术
-    20: "skating",  # 滑冰
-    21: "skiing",  # 滑雪
-    22: "snowboarding",  # 单板滑雪
-    23: "water_sports",  # 水上运动
-    24: "cycling_sport",  # 竞技骑行
-    25: "cycling_touring",  # 旅行骑行
-    26: "cycling_mountain",  # 山地骑行
-    27: "cycling_road",  # 公路骑行
-    28: "cycling_indoor",  # 室内骑行
-    29: "running_trail",  # 越野跑
-    30: "running_road",  # 公路跑
-    31: "running_treadmill",  # 跑步机
-    32: "swimming_pool",  # 泳池游泳
-    33: "swimming_open_water",  # 公开水域游泳
-    34: "walking_fitness",  # 健身步行
-    35: "walking_casual",  # 休闲步行
-    36: "walking_treadmill",  # 跑步机步行
-    37: "hiking_backpacking",  # 背包徒步
-    38: "hiking_mountaineering",  # 登山
-    39: "elliptical_cross_trainer",  # 椭圆交叉训练
-    40: "rowing_machine",  # 划船机
-    41: "stair_climber",  # 爬楼机
-    42: "strength_circuit",  # 循环力量训练
-    43: "strength_free_weights",  # 自由重量训练
-    44: "strength_machine",  # 器械力量训练
-    45: "yoga_hatha",  # 哈他瑜伽
-    46: "yoga_vinyasa",  # 流瑜伽
-    47: "yoga_restorative",  # 修复瑜伽
-    48: "cardio_aerobic",  # 有氧训练
-    49: "cardio_interval",  # 间歇训练
-    50: "cardio_kickboxing",  # 跆拳道
-    51: "basketball_outdoor",  # 户外篮球
-    52: "basketball_indoor",  # 室内篮球
-    53: "soccer_outdoor",  # 户外足球
-    54: "soccer_indoor",  # 室内足球
-    55: "tennis_outdoor",  # 户外网球
-    56: "tennis_indoor",  # 室内网球
-    57: "golf_course",  # 高尔夫球场
-    58: "golf_driving_range",  # 高尔夫练习场
-    59: "dancing_ballroom",  # 交谊舞
-    60: "dancing_hip_hop",  # 嘻哈舞
-    61: "dancing_latin",  # 拉丁舞
-    62: "dancing_salsa",  # 萨尔萨舞
-    63: "dancing_swing",  # 摇摆舞
-    64: "dancing_tango",  # 探戈
-    65: "martial_arts_karate",  # 空手道
-    66: "martial_arts_taekwondo",  # 跆拳道
-    67: "martial_arts_kung_fu",  # 功夫
-    68: "martial_arts_judo",  # 柔道
-    69: "martial_arts_jujitsu",  # 柔术
-    70: "martial_arts_muay_thai",  # 泰拳
-    71: "skating_ice",  # 冰上滑冰
-    72: "skating_roller",  # 轮滑
-    73: "skiing_alpine",  # 高山滑雪
-    74: "skiing_cross_country",  # 越野滑雪
-    75: "skiing_backcountry",  # 野外滑雪
-    76: "snowboarding_freestyle",  # 自由式单板滑雪
-    77: "snowboarding_alpine",  # 高山单板滑雪
-    78: "water_sports_kayaking",  # 皮划艇
-    79: "water_sports_canoeing",  # 独木舟
-    80: "water_sports_paddleboarding",  #  paddleboarding
-    81: "water_sports_surfing",  # 冲浪
-    82: "water_sports_windsurfing",  # 帆板
-    83: "water_sports_kitesurfing",  # 风筝冲浪
-    84: "water_sports_sailing",  # 帆船
-    85: "water_sports_swimming",  # 游泳
-    86: "other_sport",  # 其他运动
-    87: "other_fitness",  # 其他健身
-    88: "other_leisure",  # 其他休闲
-    89: "other_work",  # 其他工作
-    90: "other_transportation",  # 其他交通
+    1: ("running", "跑步"),
+    2: ("cycling", "骑行"),
+    3: ("hiking", "徒步"),
+    4: ("other", "其他运动"),
+    5: ("mountain_biking", "山地自行车"),
+    6: ("trail_running", "越野跑"),
+    7: ("street_running", "公路跑"),
+    8: ("track_running", "跑道跑"),
+    9: ("walking", "步行"),
+    10: ("road_biking", "公路自行车"),
+    11: ("indoor_cardio", "室内有氧运动"),
+    13: ("strength_training", "力量训练"),
+    15: ("casual_walking", "休闲散步"),
+    16: ("speed_walking", "快走"),
+    17: ("all", "所有运动类型"),
+    18: ("treadmill_running", "跑步机跑步"),
+    19: ("cyclocross", "公路越野自行车"),
+    20: ("downhill_biking", "速降自行车"),
+    21: ("track_cycling", "场地自行车"),
+    22: ("recumbent_cycling", "卧式自行车"),
+    25: ("indoor_cycling", "室内骑行"),
+    26: ("swimming", "游泳"),
+    27: ("lap_swimming", "泳池划水游泳"),
+    28: ("open_water_swimming", "公开水域游泳"),
+    29: ("fitness_equipment", "健身器材运动"),
+    30: ("elliptical", "椭圆机"),
+    31: ("stair_climbing", "爬楼梯"),
+    32: ("indoor_rowing", "室内划船"),
+    37: ("mountaineering", "登山"),
+    41: ("wind_kite_surfing", "风筝冲浪"),
+    44: ("horseback_riding", "骑马"),
+    49: ("driving_general", "普通驾驶"),
+    52: ("flying", "飞行"),
+    60: ("whitewater_rafting_kayaking", "激流皮划艇/漂流"),
+    63: ("inline_skating", "直排轮滑"),
+    88: ("golf", "高尔夫"),
+    89: ("multi_sport", "多项运动"),
+    108: ("steps", "步数记录"),
+    131: ("bmx", "小轮车"),
+    133: ("hunting_fishing", "狩猎钓鱼"),
+    134: ("sky_diving", "跳伞"),
+    136: ("rc_drone", "遥控无人机"),
+    139: ("rock_climbing", "攀岩"),
+    140: ("hang_gliding", "悬挂式滑翔"),
+    141: ("wingsuit_flying", "翼装飞行"),
+    143: ("gravel_cycling", "砾石路骑行"),
+    144: ("diving", "潜水"),
+    145: ("single_gas_diving", "单气体潜水"),
+    146: ("multi_gas_diving", "多气体潜水"),
+    147: ("gauge_diving", "仪表潜水"),
+    148: ("apnea_diving", "自由潜水"),
+    150: ("floor_climbing", "室内攀岩墙攀爬"),
+    151: ("stop_watch", "秒表计时"),
+    152: ("virtual_ride", "虚拟骑行"),
+    153: ("virtual_run", "虚拟跑步"),
+    154: ("obstacle_run", "障碍跑"),
+    155: ("apnea_hunting", "自由潜水狩猎"),
+    156: ("indoor_running", "室内跑步"),
+    157: ("safety", "安全相关"),
+    158: ("assistance", "救援协助"),
+    159: ("incident_detected", "事故检测"),
+    160: ("pilates", "普拉提"),
+    161: ("ccr_diving", "闭环式循环呼吸器潜水"),
+    162: ("auto_racing", "赛车"),
+    163: ("yoga", "瑜伽"),
+    164: ("breathwork", "呼吸练习"),
+    165: ("winter_sports", "冬季运动"),
+    166: ("snowmobiling_ws", "雪地摩托"),
+    167: ("snow_shoe_ws", "雪鞋行走"),
+    168: ("skating_ws", "滑冰"),
+    169: ("backcountry_skiing_snowboarding_ws", "野外滑雪/单板滑雪"),
+    170: ("skate_skiing_ws", "速滑滑雪"),
+    171: ("cross_country_skiing_ws", "越野滑雪"),
+    172: ("resort_skiing_snowboarding_ws", "滑雪场滑雪/单板滑雪"),
+    173: ("indoor_climbing", "室内攀岩"),
+    174: ("bouldering", "抱石攀岩"),
+    175: ("e_bike_mountain", "电动山地自行车"),
+    176: ("e_bike_fitness", "电动健身自行车"),
+    180: ("hiit", "高强度间歇训练"),
+    181: ("ultra_run", "超级马拉松"),
+    182: ("e_sport", "电子竞技"),
+    185: ("motorcycling_v2", "摩托车骑行"),
+    186: ("motocross_v2", "摩托车越野"),
+    187: ("atv_v2", "全地形车"),
+    189: ("transition_v2", "运动转换（铁人三项等）"),
+    190: ("swimToBikeTransition_v2", "游泳转骑行（铁人三项）"),
+    191: ("bikeToRunTransition_v2", "骑行转跑步（铁人三项）"),
+    192: ("runToBikeTransition_v2", "跑步转骑行（铁人三项）"),
+    193: ("hunting", "狩猎"),
+    197: ("hand_cycling", "手摇自行车"),
+    198: ("indoor_hand_cycling", "室内手摇自行车"),
+    199: ("para_sports", "残疾人运动"),
+    200: ("wheelchair_push_run", "轮椅推跑"),
+    201: ("wheelchair_push_walk", "轮椅推走"),
+    202: ("meditation", "冥想"),
+    203: ("backcountry_skiing", "野外滑雪"),
+    204: ("backcountry_snowboarding", "野外单板滑雪"),
+    205: ("disc_golf", "飞盘高尔夫"),
+    206: ("team_sports", "团队运动"),
+    207: ("cricket", "板球"),
+    208: ("rugby", "橄榄球"),
+    209: ("ice_hockey", "冰球"),
+    210: ("field_hockey", "场地曲棍球"),
+    211: ("lacrosse", "长曲棍球"),
+    212: ("volleyball", "排球"),
+    213: ("ultimate_disc", "极限飞盘"),
+    214: ("softball", "垒球"),
+    215: ("soccer", "足球"),
+    216: ("american_football", "美式橄榄球"),
+    217: ("basketball", "篮球"),
+    218: ("baseball", "棒球"),
+    219: ("racket_sports", "球拍类运动"),
+    220: ("table_tennis", "乒乓球"),
+    221: ("platform_tennis", "平台网球"),
+    222: ("racquetball", "壁球（短柄）"),
+    223: ("squash", "壁球（长柄）"),
+    224: ("badminton", "羽毛球"),
+    225: ("pickleball", "匹克球"),
+    226: ("paddelball", "板式网球"),
+    227: ("tennis_v2", "网球"),
+    228: ("water_sports", "水上运动"),
+    229: ("boating_v2", "划船"),
+    230: ("fishing_v2", "钓鱼"),
+    231: ("kayaking_v2", "皮划艇"),
+    232: ("kiteboarding_v2", "风筝板"),
+    233: ("offshore_grinding_v2", "近海划水"),
+    234: ("onshore_grinding_v2", "陆上划水训练"),
+    235: ("paddling_v2", "划桨运动"),
+    236: ("whitewater_rafting_v2", "激流漂流"),
+    237: ("rowing_v2", "赛艇"),
+    238: ("sailing_v2", "帆船"),
+    239: ("stand_up_paddleboarding_v2", "立式桨板"),
+    240: ("surfing_v2", "冲浪"),
+    241: ("water_tubing", "水上滑管"),
+    242: ("windsurfing_v2", "帆板"),
+    243: ("wakeboarding_v2", "尾波板"),
+    244: ("wakesurfing", "尾波冲浪"),
+    245: ("waterskiing", "滑水"),
+    246: ("boxing", "拳击"),
+    247: ("archery", "射箭"),
+    248: ("mixed_martial_arts", "综合格斗"),
+    249: ("overland", "越野旅行"),
+    250: ("snorkeling", "浮潜"),
+    251: ("resort_skiing", "滑雪场滑雪"),
+    252: ("resort_snowboarding", "滑雪场单板滑雪"),
+    253: ("dance", "舞蹈"),
+    254: ("jump_rope", "跳绳"),
+    255: ("mobility", "灵活性训练"),
+    256: ("enduro_mtb", "耐力山地自行车"),
+    257: ("rucking", "负重徒步"),
+    259: ("pool_apnea", "泳池自由潜水"),
+    260: ("e_enduro_mtb", "电动耐力山地自行车"),
 }
+
+
+def get_coros_sport_type(sport_type_id):
+    """映射 Coros sportType 到标准运动类型"""
+    # Coros sportType 映射
+    COROS_SPORT_TYPE_MAP = {
+        100: "常规跑步",
+        101: "跑步机",
+        102: "越野跑",
+        103: "虚拟跑步",
+        104: "操场跑步",
+        200: "公路骑行",
+        201: "Indoor Cycling",
+        202: "Gravel Cycling",
+        300: "Pool Swimming",
+        301: "Open Water Swimming",
+        400: "室内有氧",
+        401: "户外有氧",
+        402: "力量训练",
+        500: "Triathlon",
+        901: "跳绳",
+        902: "爬楼",
+        999: "Other",  # 其他运动
+    }
+    return COROS_SPORT_TYPE_MAP.get(sport_type_id, "")
+
 
 GARMIN_URL_DICT = {
     "garmin_connect_activities": "/activitylist-service/activities/search/activities",
     "garmin_connect_fit_download": "/download-service/files/activity",
     "garmin_connect_upload": "/upload-service/upload",
+    "garmin_connect_delete": "/activity-service/activity",
 }
+
+
+class GarminAuthDomain(Enum):
+    COM = "COM"
+    CN = "CN"

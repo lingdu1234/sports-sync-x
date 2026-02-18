@@ -33,6 +33,8 @@ config.yaml
 /garmin-fit
 garminBak.db
 /coros-fit
+/fit-coros
+fit-garmin
 .env
 coros.db
 garmin.db
