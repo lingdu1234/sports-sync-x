@@ -1,0 +1,61 @@
+name: sports-sync-x
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1,13 * * ?' # UTC 时间：1:00 和 13:00，对应北京时间 9:00 和 21:00
+
+env:
+  GITHUB_NAME: lingdu
+  GITHUB_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+  ## 同步设置
+  ## Garmin 配置
+  GARMIN_EMAIL_COM: ${{ secrets.GARMIN_EMAIL_COM }}
+  GARMIN_PASSWORD_COM: ${{ secrets.GARMIN_PASSWORD_COM }}
+  GARMIN_EMAIL_CN: ${{ secrets.GARMIN_EMAIL_CN }}
+  GARMIN_PASSWORD_CN: ${{ secrets.GARMIN_PASSWORD_CN }}
+  GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+  GARMIN_NEWEST_NUM: ${{ secrets.GARMIN_NEWEST_NUM }}
+
+  ## Coros 配置
+  COROS_EMAIL: ${{ secrets.COROS_EMAIL }}
+  COROS_PASSWORD: ${{ secrets.COROS_PASSWORD }}
+  ## 同步参数
+  DELETE_DUPLICATE: ${{ secrets.DELETE_DUPLICATE }}
+  SPORT_DIFF_SECOND: ${{ secrets.SPORT_DIFF_SECOND }}
+  QYWX_BOT_KEY: ${{ secrets.QYWX_BOT_KEY }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.14'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v1
+        with:
+          version: 'latest'
+
+      - name: Create virtual environment and install dependencies
+        run: |
+          uv venv .venv
+          source .venv/bin/activate
+          uv sync
+
+      - name: Run sports sync
+        run: |
+          source .venv/bin/activate
+          python x-sync.py
+
+      - name: Push new cookie
+        run: |
+          git config --local user.email "${{ env.GITHUB_EMAIL }}"
+          git config --local user.name "${{ env.GITHUB_NAME }}"
+          git add .
+          git commit -m 'feat(sync): sync activities' || echo "nothing to commit"
+          git push || echo "nothing to push"
