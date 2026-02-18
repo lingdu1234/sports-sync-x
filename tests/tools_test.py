@@ -1,6 +1,6 @@
 from app.coros.coros_client import CorosClient
 from app.database.db import SportPlatform
-from app.garmin.garmin_client import get_garmin_client
+from app.garmin.garmin_client_x import get_garmin_client
 from app.utils.tools import format_datetime
 import os
 import unittest
@@ -15,10 +15,10 @@ class MyTestCase(unittest.TestCase):
     @staticmethod
     def test_config():
         print("COROS_EMAIL:", cfg.COROS_EMAIL)  # add assertion here
-        print(cfg.GARMIN_EMAIL)  # add assertion here
+        print(cfg.GARMIN_EMAIL_COM)  # add assertion here
         print(cfg.GARMIN_NEWEST_NUM)
         print(cfg.COROS_EMAIL)
-        print(cfg.GARMIN_FIT_DIR)
+        print(cfg.GARMIN_FIT_DIR_COM)
         print(cfg.COROS_FIT_DIR)
         print(cfg.DB_DIR)
 

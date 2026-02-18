@@ -1,4 +1,6 @@
 from app.utils.tools import Singleton
+from app.database.db import SportPlatform
+from app.utils.sys_config import cfg
 from typing import Any
 import time
 from functools import wraps
@@ -6,19 +8,20 @@ import os
 from enum import Enum, auto
 import requests
 
-import garth
+
+from garth import Client as gmClient
+#  不要直接使用garth 要使用Client,否则两个数据会串
 
 from app.utils.const import GARMIN_URL_DICT, GarminAuthDomain
 
 
-@Singleton
-class GarminClientCOM:
+class GarminClient:
     def __init__(self, email, password, auth_domain: GarminAuthDomain, newest_num):
         print(f"正在初始化garmin{auth_domain.value}客户端")
         self.auth_domain = auth_domain
         self.email = email
         self.password = password
-        self.garthClient = garth
+        self.garthClient = gmClient()
         self.newestNum = int(newest_num)
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
@@ -33,11 +36,12 @@ class GarminClientCOM:
         def wrapTheFunction(self, *args, **kwargs):
             session_path = f"db/garmin{self.auth_domain.value}"
             if os.path.exists(session_path):
-                garth.resume(session_path)
+                # garth.resume(session_path)
+                self.garthClient.load(session_path)
                 try:
                     if os.path.exists(session_path):
                         try:
-                            garth.client.username
+                            self.garthClient.username
                         except Exception as e:
                             print(f"读取session错误:{e}")
                             self.login_fn(session_path)
@@ -56,7 +60,8 @@ class GarminClientCOM:
             self.garthClient.configure(domain="garmin.cn")
         self.garthClient.login(self.email, self.password)
         # del self.garthClient.client.sess.headers["User-Agent"]
-        garth.save(session_path)
+        # garth.save(session_path)
+        self.garthClient.dump(session_path)
 
     @login
     def download(self, path, **kwargs):
@@ -102,11 +107,9 @@ class GarminClientCOM:
     @login
     def deleteActivity(self, id: str):
         url_path = GARMIN_URL_DICT["garmin_connect_delete"]
-        delete_url = (
-            f"https://connectapi.{self.garthClient.client.domain}{url_path}/{id}"
-        )
+        delete_url = f"https://connectapi.{self.garthClient.domain}{url_path}/{id}"
         try:
-            self.headers["Authorization"] = str(self.garthClient.client.oauth2_token)
+            self.headers["Authorization"] = str(self.garthClient.oauth2_token)
             resp = requests.delete(delete_url, headers=self.headers)
             res_code = resp.status_code
             if res_code == 204:
@@ -136,11 +139,9 @@ class GarminClientCOM:
 
                     url_path = GARMIN_URL_DICT["garmin_connect_upload"]
                     upload_url = (
-                        f"https://connectapi.{self.garthClient.client.domain}{url_path}"
+                        f"https://connectapi.{self.garthClient.domain}{url_path}"
                     )
-                    self.headers["Authorization"] = str(
-                        self.garthClient.client.oauth2_token
-                    )
+                    self.headers["Authorization"] = str(self.garthClient.oauth2_token)
                     response = requests.post(
                         upload_url, headers=self.headers, files=fields
                     )
@@ -185,34 +186,46 @@ class GarminNoLoginException(Exception):
         self.status = status
 
 
-# @Singleton
-# class GarminClientCOM(GarminClient):
-#     def __init__(self, email, password, auth_domain: GarminAuthDomain, newest_num):
+@Singleton
+class GarminClientCOM(GarminClient):
+    def __init__(self, email, password, auth_domain: GarminAuthDomain, newest_num):
+        print(f"正在初始化garmin{auth_domain.value}客户端")
+        self.auth_domain = auth_domain
+        self.email = email
+        self.password = password
+        self.garthClient = gmClient()
+        self.newestNum = int(newest_num)
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
+            "origin": GARMIN_URL_DICT.get("SSO_URL_ORIGIN"),
+            "nk": "NT",
+        }
 
-#         print(f"正在初始化garmin{auth_domain.value}客户端")
-#         self.auth_domain = auth_domain
-#         self.email = email
-#         self.password = password
-#         self.garthClient = garth
-#         self.newestNum = int(newest_num)
-#         self.headers = {
-#             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
-#             "origin": GARMIN_URL_DICT.get("SSO_URL_ORIGIN"),
-#             "nk": "NT",
-#         }
+
+@Singleton
+class GarminClientCN(GarminClient):
+    def __init__(self, email, password, auth_domain: GarminAuthDomain, newest_num):
+        print(f"正在初始化garmin{auth_domain.value}客户端")
+        self.auth_domain = auth_domain
+        self.email = email
+        self.password = password
+        self.garthClient = gmClient()
+        self.newestNum = int(newest_num)
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
+            "origin": GARMIN_URL_DICT.get("SSO_URL_ORIGIN"),
+            "nk": "NT",
+        }
 
 
-# @Singleton
-# class GarminClientCN(GarminClient):
-#     def __init__(self, email, password, auth_domain: GarminAuthDomain, newest_num):
-#         print(f"正在初始化garmin{auth_domain.value}客户端")
-#         self.auth_domain = auth_domain
-#         self.email = email
-#         self.password = password
-#         self.garthClient = garth
-#         self.newestNum = int(newest_num)
-#         self.headers = {
-#             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
-#             "origin": GARMIN_URL_DICT.get("SSO_URL_ORIGIN"),
-#             "nk": "NT",
-#         }
+def get_garmin_client(platform: SportPlatform) -> GarminClient:
+    email, password, auth_domain = (
+        (cfg.GARMIN_EMAIL_COM, cfg.GARMIN_PASSWORD_COM, GarminAuthDomain.COM)
+        if platform == SportPlatform.garminCOM
+        else (cfg.GARMIN_EMAIL_CN, cfg.GARMIN_PASSWORD_CN, GarminAuthDomain.CN)
+    )
+    return (
+        GarminClientCOM(email, password, auth_domain, cfg.GARMIN_NEWEST_NUM)
+        if platform == SportPlatform.garminCOM
+        else GarminClientCN(email, password, auth_domain, cfg.GARMIN_NEWEST_NUM)
+    )

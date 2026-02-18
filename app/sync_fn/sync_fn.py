@@ -1,6 +1,7 @@
+from app.garmin.garmin_client_x import get_garmin_client
 from app.coros.coros_client import get_coros_client
 import os
-from app.garmin.garmin_client import get_garmin_client
+
 from app.utils.fit_parser import extract_all_from_zip
 from app.utils.sys_config import cfg
 from app.database.db import SportActivity, SportPlatform
@@ -119,7 +120,7 @@ def sync_to_platform(platform: SportPlatform):
             case SportPlatform.garminCOM.value:
                 if download_garmin_activity_fn(un_sync_activity):
                     file_path = os.path.join(
-                        cfg.GARMIN_FIT_DIR,
+                        cfg.GARMIN_FIT_DIR_COM,
                         f"{un_sync_activity.activity_id}_ACTIVITY.fit",
                     )
             case SportPlatform.garminCN.value:
@@ -156,7 +157,7 @@ def sync_to_platform(platform: SportPlatform):
 def download_garmin_activity_fn(activity: SportActivity) -> bool:
     id = activity.activity_id
     FIT_DIR, client = (
-        (cfg.GARMIN_FIT_DIR, get_garmin_client(SportPlatform.garminCOM))
+        (cfg.GARMIN_FIT_DIR_COM, get_garmin_client(SportPlatform.garminCOM))
         if activity.platform == SportPlatform.garminCOM.value
         else (cfg.GARMIN_FIT_DIR_CN, get_garmin_client(SportPlatform.garminCN))
     )

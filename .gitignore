@@ -26,7 +26,7 @@ _site/
 
 config.yaml
 
-
+/fit
 /FIT_OUT
 /webdav-db
 /webdav-fit

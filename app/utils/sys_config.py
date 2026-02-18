@@ -17,8 +17,8 @@ def get_sys_config(key: str) -> str:
 class SysConfig:
     SYNC_PLATFORM: str = get_sys_config("SYNC_PLATFORM")
 
-    GARMIN_EMAIL: str = get_sys_config("GARMIN_EMAIL")
-    GARMIN_PASSWORD: str = get_sys_config("GARMIN_PASSWORD")
+    GARMIN_EMAIL_COM: str = get_sys_config("GARMIN_EMAIL_COM")
+    GARMIN_PASSWORD_COM: str = get_sys_config("GARMIN_PASSWORD_COM")
 
     GARMIN_EMAIL_CN: str = get_sys_config("GARMIN_EMAIL_CN")
     GARMIN_PASSWORD_CN: str = get_sys_config("GARMIN_PASSWORD_CN")
@@ -34,18 +34,20 @@ class SysConfig:
     QYWX_BOT_KEY: str = get_sys_config("QYWX_BOT_KEY")
 
     #     系统配置
-    GARMIN_FIT_DIR = os.path.join(work_dir, "fit-garmin")
-    GARMIN_FIT_DIR_CN = os.path.join(work_dir, "fit-garmin")
-    COROS_FIT_DIR = os.path.join(work_dir, "fit-coros")
+    GARMIN_FIT_DIR_COM = os.path.join(work_dir, "fit", "garmin_com")
+    GARMIN_FIT_DIR_CN = os.path.join(work_dir, "fit", "garmin_cn")
+    COROS_FIT_DIR = os.path.join(work_dir, "fit", "coros")
     DB_DIR = os.path.join(work_dir, "db")
     DB_NAME = "sports_sync.sqlite"
 
     def check_cfg(self) -> bool:
         if "GARMIN" in self.SYNC_PLATFORM:
-            if check_null(self.GARMIN_EMAIL) or check_null(self.GARMIN_PASSWORD):
+            if check_null(self.GARMIN_EMAIL_COM) or check_null(
+                self.GARMIN_PASSWORD_COM
+            ):
                 return False
             else:
-                check_path(self.GARMIN_FIT_DIR)
+                check_path(self.GARMIN_FIT_DIR_COM)
         if "GARMIN_CN" in self.SYNC_PLATFORM:
             if check_null(self.GARMIN_EMAIL_CN) or check_null(self.GARMIN_PASSWORD_CN):
                 return False

@@ -17,7 +17,7 @@ def Singleton(cls):
 
 def check_path(path):
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path)
 
 
 def format_datetime(data_time: dt | None):
