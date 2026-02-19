@@ -159,8 +159,10 @@ def sync_to_platform(platform: SportPlatform):
                         client = get_garmin_client(platform)
                         if client.uploadActivity(file_path):
                             setActivitySynced(un_sync_activity, platform.value, True)
+                            msg.add_message(f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 成功...")
                         else:
                             setActivitySynced(un_sync_activity, platform.value, False)
+                            msg.add_message(f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 出错...")
                     case SportPlatform.coros:
                         client = get_coros_client()
                         if un_sync_activity.platform == SportPlatform.garminCN.value:
@@ -177,8 +179,10 @@ def sync_to_platform(platform: SportPlatform):
                             file_path, un_sync_activity.activity_id
                         ):
                             setActivitySynced(un_sync_activity, platform.value, True)
+                            msg.add_message(f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 成功...")
                         else:
                             setActivitySynced(un_sync_activity, platform.value, False)
+                            msg.add_message(f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 出错...")
             else:
                 print(f"{file_path}文件不存在，将无法同步")
 

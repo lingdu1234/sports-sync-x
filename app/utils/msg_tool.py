@@ -2,6 +2,21 @@ from enum import Enum
 
 import requests
 from app.utils.sys_config import cfg
+from app.utils.tools import Singleton
+
+@Singleton
+class Messege:
+    def __init__(self):
+        self.msg = ""
+    def add_message(self, info: str,print_msg: bool = True):
+        self.msg += f"{info}\n"
+        if print_msg:
+            print(info)
+    def send(self):
+        send_message(self.msg)
+
+
+msg = Messege()
 
 
 class MsgType(Enum):
@@ -9,7 +24,11 @@ class MsgType(Enum):
     MARKDOWN_V2 = "markdown_v2"
 
 
-def send_message(content: str, msg_type: MsgType = MsgType.TEXT) -> dict:
+def send_message(info:str):
+    if cfg.QYWX_BOT_KEY is not None:
+        send_qywx_message(info)
+
+def send_qywx_message(content: str, msg_type: MsgType = MsgType.TEXT) -> dict:
     """
     发送企业微信消息
 

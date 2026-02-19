@@ -3,7 +3,7 @@ name: sports-sync-x
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 1,13 * * ?' # UTC 时间：1:00 和 13:00，对应北京时间 9:00 和 21:00
+    - cron: '0 1,13 * * *' # UTC 时间：1:00 和 13:00，对应北京时间 9:00 和 21:00
 
 env:
   GITHUB_NAME: lingdu
@@ -15,7 +15,6 @@ env:
   GARMIN_PASSWORD_COM: ${{ secrets.GARMIN_PASSWORD_COM }}
   GARMIN_EMAIL_CN: ${{ secrets.GARMIN_EMAIL_CN }}
   GARMIN_PASSWORD_CN: ${{ secrets.GARMIN_PASSWORD_CN }}
-  GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
   GARMIN_NEWEST_NUM: ${{ secrets.GARMIN_NEWEST_NUM }}
 
   ## Coros 配置
@@ -32,31 +31,97 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python 3.14
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: '3.14'
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v1
+        uses: astral-sh/setup-uv@v4
         with:
           version: 'latest'
 
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        id: uv-cache
+        with:
+          path: |
+            .venv
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Restore database cache
+        uses: actions/cache@v4
+        with:
+          path: db
+          key: ${{ runner.os }}-db-v1-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-db-v1-
+
+      - name: Restore FIT files cache
+        uses: actions/cache@v4
+        with:
+          path: fit
+          key: ${{ runner.os }}-fit-v1-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-fit-v1-
+
+      - name: Check cache status
+        run: |
+          echo "Checking directory structure..."
+          ls -la
+          echo "---"
+          echo "Checking if db directory exists..."
+          if [ -d "db" ]; then
+            echo "db directory exists, contents:"
+            ls -la db/
+          else
+            echo "db directory does not exist"
+          fi
+          echo "---"
+          echo "Checking if fit directory exists..."
+          if [ -d "fit" ]; then
+            echo "fit directory exists, contents:"
+            ls -la fit/
+          else
+            echo "fit directory does not exist"
+          fi
+
       - name: Create virtual environment and install dependencies
         run: |
-          uv venv .venv
-          source .venv/bin/activate
+          if [ ! -d ".venv" ]; then
+            echo "Creating virtual environment..."
+            uv venv .venv
+          fi
+          .venv/scripts/activate
           uv sync
 
       - name: Run sports sync
         run: |
-          source .venv/bin/activate
-          python x-sync.py
+          uv run python -u x-sync.py
+
+      - name: Show files before push
+        run: |
+          echo "Files changed:"
+          git status
+          echo "---"
+          echo "db directory after sync:"
+          if [ -d "db" ]; then
+            ls -la db/
+          fi
+          echo "---"
+          echo "fit directory after sync:"
+          if [ -d "fit" ]; then
+            ls -la fit/
+          fi
 
       - name: Push new cookie
         run: |
           git config --local user.email "${{ env.GITHUB_EMAIL }}"
           git config --local user.name "${{ env.GITHUB_NAME }}"
           git add .
-          git commit -m 'feat(sync): sync activities' || echo "nothing to commit"
+          git commit -m 'feat(sync): sync new activities' || echo "nothing to commit"
           git push || echo "nothing to push"

@@ -5,7 +5,7 @@ from sqlmodel import select, and_, Session, col, update
 from typing import Sequence
 from app.database.db import SportActivity, engine
 from datetime import datetime as dt, timedelta
-
+from app.utils.msg_tool import msg
 
 def is_exist_x(activity: SportActivity) -> tuple[bool, bool]:
     """
@@ -125,6 +125,8 @@ def checkSynced(platform: SportPlatform):
                 setActivitySynced(syncedActivity, un_sync_activity.platform, True)
             if syncedActivity.platform not in un_sync_activity.is_sync:
                 setActivitySynced(un_sync_activity, syncedActivity.platform, True)
+    un_sync_activities_2 = getUnSyncActivites(platform)
+    msg.add_message(f"检测到 {len(un_sync_activities)} 条未同步到 {platform.value},验证后共 {len(un_sync_activities_2)} 条未同步...")
 
 
 def setActivitySynced(activity: SportActivity, synced_platform: str, is_success: bool):

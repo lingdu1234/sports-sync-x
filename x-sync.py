@@ -9,7 +9,7 @@ from app.sync_fn.sync_fn import (
     sync_to_platform,
 )
 from app.utils.const import SportPlatform
-from app.utils.msg_tool import send_message
+from app.utils.msg_tool import msg
 from app.utils.sys_config import cfg
 
 
@@ -42,13 +42,13 @@ def run_sync_task():
 
     print("开始获取运动记录并删除重复记录(若配置)...")
     if SportPlatform.garminCN.value.upper() in cfg.SYNC_PLATFORM.upper():
-        print(f"获取 {SportPlatform.garminCN.value} 运动记录...")
+        msg.add_message(f"获取 {SportPlatform.garminCN.value} 运动记录...")
         deal_with_garmin_activity(SportPlatform.garminCN)
     if SportPlatform.garminCOM.value.upper() in cfg.SYNC_PLATFORM.upper():
-        print(f"获取 {SportPlatform.garminCOM.value} 运动记录...")
+        msg.add_message(f"获取 {SportPlatform.garminCOM.value} 运动记录...")
         deal_with_garmin_activity(SportPlatform.garminCOM)
     if SportPlatform.coros.value.upper() in cfg.SYNC_PLATFORM.upper():
-        print(f"获取 {SportPlatform.coros.value} 运动记录...")
+        msg.add_message(f"获取 {SportPlatform.coros.value} 运动记录...")
         deal_with_coros_activity()
 
     print("开始检查同步情况")
@@ -62,18 +62,18 @@ def run_sync_task():
         print(f"检查 {SportPlatform.coros.value} 运动记录同步情况...")
         checkSynced(SportPlatform.coros)
 
-    print("开始同步运动记录...")
-    if SportPlatform.garminCN.value.upper() in cfg.SYNC_PLATFORM.upper():
-        print(f"同步运动记录到{SportPlatform.garminCN.value}...")
-        sync_to_platform(SportPlatform.garminCN)
-    if SportPlatform.garminCOM.value.upper() in cfg.SYNC_PLATFORM.upper():
-        print(f"同步运动记录到{SportPlatform.garminCOM.value}...")
-        sync_to_platform(SportPlatform.garminCOM)
-    if SportPlatform.coros.value.upper() in cfg.SYNC_PLATFORM.upper():
-        print(f"同步运动记录到{SportPlatform.coros.value}...")
-        sync_to_platform(SportPlatform.coros)
+    # print("开始同步运动记录...")
+    # if SportPlatform.garminCN.value.upper() in cfg.SYNC_PLATFORM.upper():
+    #     print(f"同步运动记录到{SportPlatform.garminCN.value}...")
+    #     sync_to_platform(SportPlatform.garminCN)
+    # if SportPlatform.garminCOM.value.upper() in cfg.SYNC_PLATFORM.upper():
+    #     print(f"同步运动记录到{SportPlatform.garminCOM.value}...")
+    #     sync_to_platform(SportPlatform.garminCOM)
+    # if SportPlatform.coros.value.upper() in cfg.SYNC_PLATFORM.upper():
+    #     print(f"同步运动记录到{SportPlatform.coros.value}...")
+    #     sync_to_platform(SportPlatform.coros)
 
-    send_message("运动记录同步完成")
+    msg.send() # 发送消息
 
     print("=" * 60)
     print("运动记录同步任务完成")
@@ -97,7 +97,7 @@ def deal_with_garmin_activity(garmin_platform: SportPlatform):
                 f"{garmin_platform.value} activity 重复,1秒后将删除:{activity.activity_id}"
             )
             time.sleep(1)  # 等待10秒，防止api报错
-            client.deleteActivity(activity.activity_id)
+            # client.deleteActivity(activity.activity_id)
 
 
 def deal_with_coros_activity():
@@ -115,7 +115,7 @@ def deal_with_coros_activity():
         if is_DUPLICATE and cfg.DELETE_DUPLICATE == "1":
             print(f"Coros平台 activity 重复,1秒后将删除:{activity.activity_id}")
             time.sleep(1)  # 等待10秒，防止api报错
-            client.deleteActivity(activity.activity_id)
+            # client.deleteActivity(activity.activity_id)
 
 
 # 按装订区域中的绿色按钮以运行脚本。
