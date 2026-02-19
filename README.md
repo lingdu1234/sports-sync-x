@@ -2,6 +2,10 @@
 
 一个可以在 Garmin.cn、Garmin.com 和 Coros 三个平台之间自动同步运动记录的工具。支持自动检测和删除重复记录，并支持企业微信通知。
 
+## ????
+
+本地 windows 和  linux 下都没有问题，在github action 未同步任务老师识别出错，不纠结了，就本地设置定时任务运行吧
+
 ## 功能特性
 
 - **多平台同步**：支持 Garmin CN、Garmin COM 和 Coros 三个运动平台
