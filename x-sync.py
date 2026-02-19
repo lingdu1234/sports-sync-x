@@ -97,7 +97,7 @@ def deal_with_garmin_activity(garmin_platform: SportPlatform):
                 f"{garmin_platform.value} activity 重复,1秒后将删除:{activity.activity_id}"
             )
             time.sleep(1)  # 等待10秒，防止api报错
-            # client.deleteActivity(activity.activity_id)
+            client.deleteActivity(activity.activity_id)
 
 
 def deal_with_coros_activity():
@@ -115,7 +115,7 @@ def deal_with_coros_activity():
         if is_DUPLICATE and cfg.DELETE_DUPLICATE == "1":
             print(f"Coros平台 activity 重复,1秒后将删除:{activity.activity_id}")
             time.sleep(1)  # 等待10秒，防止api报错
-            # client.deleteActivity(activity.activity_id)
+            client.deleteActivity(activity.activity_id)
 
 
 # 按装订区域中的绿色按钮以运行脚本。

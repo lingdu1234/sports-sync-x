@@ -114,6 +114,7 @@ def process_coros_activity(activity: Dict) -> SportActivity:
 def sync_to_platform(platform: SportPlatform):
     # 获取没有同步到该平台的记录
     un_sync_activities = getUnSyncActivites(platform)
+    msg.add_message(f"检测到 {len(un_sync_activities)} 条未同步到 {platform.value}...")
     for un_sync_activity in un_sync_activities:
         # 下载
         file_path = ""

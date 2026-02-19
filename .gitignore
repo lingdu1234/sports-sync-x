@@ -38,4 +38,4 @@ fit-garmin
 .env
 coros.db
 garmin.db
-/db
+_token_data

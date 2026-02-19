@@ -33,7 +33,7 @@ class GarminClient:
     def login(f):
         @wraps(f)
         def wrapTheFunction(self, *args, **kwargs):
-            session_path = f"db/garmin{self.auth_domain.value}"
+            session_path = f"_token_data/garmin{self.auth_domain.value}"
             if os.path.exists(session_path):
                 # garth.resume(session_path)
                 self.garthClient.load(session_path)
@@ -45,9 +45,10 @@ class GarminClient:
                             print(f"读取session错误:{e}")
                             self.login_fn(session_path)
                 except Exception:
-                    print("Garmin is not logging in or the token has expired.")
+                    print(f"garmin{self.auth_domain.value} is not loggin,re login...")
                     self.login_fn(session_path)
             else:
+                print(f"garmin{self.auth_domain.value} token is not exist,re login...")
                 self.login_fn(session_path)
 
             return f(self, *args, **kwargs)
