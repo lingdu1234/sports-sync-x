@@ -1,11 +1,12 @@
 from app.utils.const import SportPlatform
 from app.utils.sys_config import cfg
 from app.utils.tools import get_datetime, format_datetime
-from sqlmodel import select, and_, Session, col, update
+from sqlmodel import select, and_, Session, col
 from typing import Sequence
 from app.database.db import SportActivity, engine
 from datetime import datetime as dt, timedelta
 from app.utils.msg_tool import msg
+
 
 def is_exist_x(activity: SportActivity) -> tuple[bool, bool]:
     """
@@ -52,10 +53,6 @@ def is_exist_x(activity: SportActivity) -> tuple[bool, bool]:
     with Session(engine) as session:
         data = session.exec(stmt).one_or_none()
         if data is not None:
-            # print(
-            #     f"该记录已经重复:{activity.activity_id}<==>{data.activity_id},{int(activity.activity_id) != int(data.activity_id)}"
-            # )
-            # 这里对比需要转换为数组，或者字符，不能直接对比，在对象中，地址不一样，怎么都不相等
             return True, int(activity.activity_id) != int(data.activity_id)
         else:
             return False, False
@@ -115,32 +112,46 @@ def checkSynced(platform: SportPlatform):
     :param platform: 运动平台
     :type platform: SportPlatform
     """
+    # 第一步：获取未同步到该 platform 的数据
     un_sync_activities = getUnSyncActivites(platform)
+    # 第二步：对未同步的数据进行遍历
     for un_sync_activity in un_sync_activities:
-        syncedActivities = getSyncedActivities(un_sync_activity)
-        for syncedActivity in syncedActivities:
-            # 对数据进行标记
-            if un_sync_activity.platform not in syncedActivity.is_sync:
-                # 平台值，不在is_sync值内
-                setActivitySynced(syncedActivity, un_sync_activity.platform, True)
-            if syncedActivity.platform not in un_sync_activity.is_sync:
-                setActivitySynced(un_sync_activity, syncedActivity.platform, True)
+        # 获取重复的数据
+        duplicate_activities = getSyncedActivities(un_sync_activity)
+
+        if duplicate_activities:
+            # 对重复的数据进行分析
+            for duplicate_activity in duplicate_activities:
+                # 如果重复数据的 platform 不在 un_sync_activity 的 is_sync 内
+                if duplicate_activity.platform not in un_sync_activity.is_sync:
+                    setActivitySynced(
+                        un_sync_activity, duplicate_activity.platform, True
+                    )
+
+                # 做反向标记：如果 un_sync_activity 的 platform 不在 duplicate_activity 的 is_sync 内
+                if un_sync_activity.platform not in duplicate_activity.is_sync:
+                    setActivitySynced(
+                        duplicate_activity, un_sync_activity.platform, True
+                    )
+
+    # 再次获取未同步数据，用于统计
     un_sync_activities_2 = getUnSyncActivites(platform)
-    msg.add_message(f"检测到 {len(un_sync_activities)} 条未同步到 {platform.value},验证后共 {len(un_sync_activities_2)} 条未同步...")
+    msg.add_message(
+        f"检测到 {len(un_sync_activities)} 条未同步到 {platform.value},验证后共 {len(un_sync_activities_2)} 条未同步..."
+    )
 
 
 def setActivitySynced(activity: SportActivity, synced_platform: str, is_success: bool):
 
     v = f"{synced_platform}@1" if is_success else f"{synced_platform}@0"
-    is_sync = v if activity.is_sync == "" else f"{activity.is_sync},{v}"
-    with Session(engine) as session:
-        stmt = (
-            update(SportActivity)
-            .where(col(SportActivity.activity_id) == activity.activity_id)
-            .values(is_sync=is_sync)
-        )
 
-        session.exec(stmt)
+    with Session(engine) as session:
+        stmt = select(SportActivity).where(
+            col(SportActivity.activity_id) == activity.activity_id
+        )
+        data: SportActivity = session.exec(stmt).one()
+        is_sync = v if data.is_sync == "" else f"{data.is_sync},{v}"
+        data.is_sync = is_sync
         session.commit()
 
 

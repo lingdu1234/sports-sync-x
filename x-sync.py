@@ -62,18 +62,18 @@ def run_sync_task():
         print(f"检查 {SportPlatform.coros.value} 运动记录同步情况...")
         checkSynced(SportPlatform.coros)
 
-    # print("开始同步运动记录...")
-    # if SportPlatform.garminCN.value.upper() in cfg.SYNC_PLATFORM.upper():
-    #     print(f"同步运动记录到{SportPlatform.garminCN.value}...")
-    #     sync_to_platform(SportPlatform.garminCN)
-    # if SportPlatform.garminCOM.value.upper() in cfg.SYNC_PLATFORM.upper():
-    #     print(f"同步运动记录到{SportPlatform.garminCOM.value}...")
-    #     sync_to_platform(SportPlatform.garminCOM)
-    # if SportPlatform.coros.value.upper() in cfg.SYNC_PLATFORM.upper():
-    #     print(f"同步运动记录到{SportPlatform.coros.value}...")
-    #     sync_to_platform(SportPlatform.coros)
+    print("开始同步运动记录...")
+    if SportPlatform.garminCN.value.upper() in cfg.SYNC_PLATFORM.upper():
+        print(f"同步运动记录到{SportPlatform.garminCN.value}...")
+        sync_to_platform(SportPlatform.garminCN)
+    if SportPlatform.garminCOM.value.upper() in cfg.SYNC_PLATFORM.upper():
+        print(f"同步运动记录到{SportPlatform.garminCOM.value}...")
+        sync_to_platform(SportPlatform.garminCOM)
+    if SportPlatform.coros.value.upper() in cfg.SYNC_PLATFORM.upper():
+        print(f"同步运动记录到{SportPlatform.coros.value}...")
+        sync_to_platform(SportPlatform.coros)
 
-    msg.send() # 发送消息
+    msg.send()  # 发送消息
 
     print("=" * 60)
     print("运动记录同步任务完成")

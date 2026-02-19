@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 from app.oss.ali_oss_client import AliOssClient
 from app.oss.aws_oss_client import AwsOssClient
@@ -119,7 +120,7 @@ class CorosClient:
             }
             json_data = json.dumps(data)
             json_str = str(json_data)
-            # print(json_str)
+            print(json_str)
             response = self.req.request(
                 method="POST",
                 url=upload_url,
@@ -127,7 +128,7 @@ class CorosClient:
                 headers=headers,
             )
             upload_response = json.loads(response.data)
-            # print(upload_response)
+            print(upload_response)
             if (
                 upload_response["data"].get("status") == 2
                 and upload_response["result"] == "0000"
@@ -138,7 +139,7 @@ class CorosClient:
         except Exception:
             exit()
 
-    def uploadActivity(self, file_path: str, un_sync_id: str) -> bool:
+    def uploadActivity(self, file_path: str) -> bool:
         """
         从 Garmin 同步你上传的活动到 Coros
         :param file_path: fit 文件路径
@@ -152,6 +153,7 @@ class CorosClient:
                 client = AliOssClient()
             elif self.regionId == 1 or self.regionId == 3:
                 client = AwsOssClient()
+            file_name = Path(file_path).name
             _oss_obj = client.multipart_upload(  # pyright: ignore[reportOptionalMemberAccess]  # ty:ignore[unresolved-attribute]
                 file_path, f"{self.userId}/{calculate_md5_file(file_path)}.zip"
             )
@@ -159,16 +161,15 @@ class CorosClient:
             upload_result = self.uploadActivityFn(
                 f"fit_zip/{self.userId}/{calculate_md5_file(file_path)}.zip",
                 calculate_md5_file(file_path),
-                f"{un_sync_id}.zip",
+                file_name,
                 size,
             )
             if upload_result:
-                print(f"✓ 已同步 Garmin 活动 {un_sync_id}")
                 return True
             else:
                 return False
         except Exception as err:
-            print(f"* ✗ 同步 Garmin 活动 {un_sync_id} 失败:{err}")
+            print(err)
             return False
 
     def getActivities(self, size: int, page: int) -> Any:

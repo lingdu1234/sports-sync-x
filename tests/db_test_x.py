@@ -1,7 +1,8 @@
+from app.utils.const import SportPlatform
 from sqlalchemy import update
 from sqlmodel import Session, delete, select, col, and_, not_
 from app.database.db_api import getUnSyncActivites, getAllActivities
-from app.database.db import engine, SportActivity, SportPlatform, Base
+from app.database.db import engine, SportActivity, Base
 from typing import Sequence
 from datetime import datetime as dt
 
@@ -58,31 +59,14 @@ class DbTest(unittest.TestCase):
                 .where(
                     and_(
                         col(SportActivity.platform) == SportPlatform.garminCN.value,
-                        not_(
-                            col(SportActivity.is_sync).contains(
-                                SportPlatform.coros.value
-                            )
+                        col(SportActivity.is_sync).not_like(
+                            f"%{SportPlatform.coros.value}%"
                         ),
                     )
                 )
                 .limit(1)
             )
             data = session.exec(stmt).one()
-            # data.updated_at = format_datetime(dt.now())
-            session.commit()
-            print(data)
-
-    def test_select2(self):
-        with Session(engine) as session:
-            stmt = select(SportActivity).where(
-                and_(
-                    col(SportActivity.platform) == SportPlatform.garminCN.value,
-                    not_(
-                        col(SportActivity.is_sync).contains(SportPlatform.coros.value)
-                    ),
-                )
-            )
-            data = session.exec(stmt).all()
             # data.updated_at = format_datetime(dt.now())
             session.commit()
             print(data)

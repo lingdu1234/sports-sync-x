@@ -1,3 +1,4 @@
+from app.utils.msg_tool import msg
 from app.garmin.garmin_client_x import get_garmin_client
 from app.coros.coros_client import get_coros_client
 import os
@@ -159,10 +160,14 @@ def sync_to_platform(platform: SportPlatform):
                         client = get_garmin_client(platform)
                         if client.uploadActivity(file_path):
                             setActivitySynced(un_sync_activity, platform.value, True)
-                            msg.add_message(f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 成功...")
+                            msg.add_message(
+                                f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 成功..."
+                            )
                         else:
                             setActivitySynced(un_sync_activity, platform.value, False)
-                            msg.add_message(f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 出错...")
+                            msg.add_message(
+                                f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 出错..."
+                            )
                     case SportPlatform.coros:
                         client = get_coros_client()
                         if un_sync_activity.platform == SportPlatform.garminCN.value:
@@ -175,14 +180,16 @@ def sync_to_platform(platform: SportPlatform):
                                 cfg.GARMIN_FIT_DIR_COM,
                                 f"{un_sync_activity.activity_id}.zip",
                             )
-                        if client.uploadActivity(
-                            file_path, un_sync_activity.activity_id
-                        ):
+                        if client.uploadActivity(file_path):
                             setActivitySynced(un_sync_activity, platform.value, True)
-                            msg.add_message(f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 成功...")
+                            msg.add_message(
+                                f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 成功..."
+                            )
                         else:
                             setActivitySynced(un_sync_activity, platform.value, False)
-                            msg.add_message(f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 出错...")
+                            msg.add_message(
+                                f"{un_sync_activity.platform} 的 {un_sync_activity.activity_id} 同步到 {platform.value} 出错..."
+                            )
             else:
                 print(f"{file_path}文件不存在，将无法同步")
 
