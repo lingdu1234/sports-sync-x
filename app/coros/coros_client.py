@@ -120,7 +120,7 @@ class CorosClient:
             }
             json_data = json.dumps(data)
             json_str = str(json_data)
-            print(json_str)
+            # print(json_str)
             response = self.req.request(
                 method="POST",
                 url=upload_url,
@@ -128,7 +128,7 @@ class CorosClient:
                 headers=headers,
             )
             upload_response = json.loads(response.data)
-            print(upload_response)
+            # print(upload_response)
             if (
                 upload_response["data"].get("status") == 2
                 and upload_response["result"] == "0000"
