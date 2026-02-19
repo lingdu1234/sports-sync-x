@@ -96,7 +96,6 @@ jobs:
             echo "Creating virtual environment..."
             uv venv .venv
           fi
-          .venv/scripts/activate
           uv sync
 
       - name: Run sports sync
