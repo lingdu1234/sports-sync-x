@@ -146,7 +146,9 @@ def setActivitySynced(activity: SportActivity, synced_platform: str, is_success:
     v = f"{synced_platform}@1" if is_success else f"{synced_platform}@0"
 
     with Session(engine) as session:
-        stmt = select(SportActivity).where(col(SportActivity.id) == activity.id)
+        stmt = (
+            select(SportActivity).where(col(SportActivity.id) == activity.id).limit(1)
+        )
         data: SportActivity = session.exec(stmt).one()
         if synced_platform not in data.is_sync:
             is_sync = v if data.is_sync == "" else f"{data.is_sync},{v}"
