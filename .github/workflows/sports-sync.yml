@@ -57,7 +57,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: db
-          key: ${{ runner.os }}-db-v1-${{ github.run_number }}
+          key: ${{ runner.os }}-db-v1-latest
           restore-keys: |
             ${{ runner.os }}-db-v1-
 
@@ -65,7 +65,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: fit
-          key: ${{ runner.os }}-fit-v1-${{ github.run_number }}
+          key: ${{ runner.os }}-fit-v1-latest
           restore-keys: |
             ${{ runner.os }}-fit-v1-
 
