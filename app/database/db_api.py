@@ -150,9 +150,10 @@ def setActivitySynced(activity: SportActivity, synced_platform: str, is_success:
             col(SportActivity.activity_id) == activity.activity_id
         )
         data: SportActivity = session.exec(stmt).one()
-        is_sync = v if data.is_sync == "" else f"{data.is_sync},{v}"
-        data.is_sync = is_sync
-        session.commit()
+        if synced_platform not in data.is_sync:
+            is_sync = v if data.is_sync == "" else f"{data.is_sync},{v}"
+            data.is_sync = is_sync
+            session.commit()
 
 
 def getSyncedActivities(activity: SportActivity) -> Sequence[SportActivity]:
