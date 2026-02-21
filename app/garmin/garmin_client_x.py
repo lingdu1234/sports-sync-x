@@ -33,35 +33,24 @@ class GarminClient:
     def login(f):
         @wraps(f)
         def wrapTheFunction(self, *args, **kwargs):
-            session_path = f"_token_data/garmin{self.auth_domain.value}"
-            if os.path.exists(session_path):
-                # garth.resume(session_path)
-                self.garthClient.load(session_path)
+            try:
                 try:
-                    if os.path.exists(session_path):
-                        try:
-                            self.garthClient.username
-                        except Exception as e:
-                            print(f"读取session错误:{e}")
-                            self.login_fn(session_path)
-                except Exception:
-                    print(f"garmin{self.auth_domain.value} is not loggin,re login...")
-                    self.login_fn(session_path)
-            else:
-                print(f"garmin{self.auth_domain.value} token is not exist,re login...")
-                self.login_fn(session_path)
-
+                    self.garthClient.username
+                except Exception as e:
+                    print(f"读取session错误:{e}")
+                    self.login_fn()
+            except Exception:
+                print(f"garmin{self.auth_domain.value} is not loggin,re login...")
+                self.login_fn()
             return f(self, *args, **kwargs)
 
         return wrapTheFunction
 
-    def login_fn(self, session_path):
+    def login_fn(self):
         if self.auth_domain and self.auth_domain == GarminAuthDomain.CN:
             self.garthClient.configure(domain="garmin.cn")
         self.garthClient.login(self.email, self.password)
         del self.garthClient.sess.headers["User-Agent"]
-        # garth.save(session_path)
-        self.garthClient.dump(session_path)
 
     @login
     def download(self, path, **kwargs):
@@ -145,6 +134,8 @@ class GarminClient:
                     response = requests.post(
                         upload_url, headers=self.headers, files=fields
                     )
+                    print("resp:", response.status_code)
+                    print("resp:", response.json)
                     res_code = response.status_code
                     result = response.json()
                     uploadId = result.get("detailedImportResult").get("uploadId")
@@ -161,7 +152,7 @@ class GarminClient:
                     ):
                         return True
             except Exception as e:
-                print(e)
+                print("erorr:", e)
 
                 return False
             finally:

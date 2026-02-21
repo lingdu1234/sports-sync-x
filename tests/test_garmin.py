@@ -1,21 +1,17 @@
-# import unittest
-#
-# from scripts.garmin.garmin_client import GarminClient
-# from scripts.utils.sys_config import sysConfig
+from app.utils.sys_config import cfg
+import os
+from app.utils.const import SportPlatform
+from app.garmin.garmin_client_x import get_garmin_client
+import unittest
 
 
-# class GarminTest(unittest.TestCase):
-#     def test_loin(self):
-#         cfg = sysConfig
-#         client = GarminClient(
-#             cfg.GARMIN_EMAIL,
-#             cfg.GARMIN_PASSWORD,
-#             cfg.GARMIN_AUTH_DOMAIN,
-#             int(cfg.GARMIN_NEWEST_NUM),
-#         )
-#         all = client.getActivities(0, 1)
-#         print(all)
+class GarminTest(unittest.TestCase):
+    def test_garminCN_upload(self):
+        client = get_garmin_client(SportPlatform.garminCN)
+        path = "465929716908458004"
+        file = os.path.join(cfg.COROS_FIT_DIR, f"{path}.fit")
+        client.uploadActivity(file)
 
-#
-# if __name__ == "__main__":
-#     _ = unittest.main()
+
+if __name__ == "__main__":
+    _ = unittest.main()

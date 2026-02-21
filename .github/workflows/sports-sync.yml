@@ -53,14 +53,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-uv-
 
-      - name: Restore token cache
-        uses: actions/cache@v4
-        with:
-          path: _token_data
-          key: ${{ runner.os }}-token-v1-latest
-          restore-keys: |
-            ${{ runner.os }}-token-v1-
-
       - name: Restore FIT files cache
         uses: actions/cache@v4
         with:
