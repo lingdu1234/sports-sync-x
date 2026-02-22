@@ -12,6 +12,11 @@ class GarminTest(unittest.TestCase):
         file = os.path.join(cfg.COROS_FIT_DIR, f"{path}.fit")
         client.uploadActivity(file)
 
+    def test_get(self):
+        client = get_garmin_client(SportPlatform.garminCN)
+        data = client.getAllActivities()
+        print(len(data))
+
 
 if __name__ == "__main__":
     _ = unittest.main()

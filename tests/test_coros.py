@@ -11,6 +11,11 @@ class CorosTest(unittest.TestCase):
         client = get_coros_client()
         client.uploadActivity(path)
 
+    def test_get(self):
+        client = get_coros_client()
+        data = client.getAllActivities()
+        print(len(data))
+
 
 if __name__ == "__main__":
     _ = unittest.main()

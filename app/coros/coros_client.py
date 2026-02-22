@@ -191,9 +191,10 @@ class CorosClient:
     ## 获取所有运动
     def getAllActivities(self) -> list[dict]:
         all_activities = []
-        size = 200
+        new = int(cfg.GARMIN_NEWEST_NUM)
+        size = 100
         page = 1
-        while True:
+        while (page - 1) * size <= new:
             activities = self.getActivities(size, page)
             totalPage = activities["data"]["totalPage"]
             if totalPage >= page:
@@ -201,6 +202,7 @@ class CorosClient:
             else:
                 return all_activities
             page += 1
+        return all_activities
 
     def downloadActivity(self, id: str, sport_type):
         self.checkToken()

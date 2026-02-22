@@ -75,14 +75,17 @@ class GarminClient:
     def getAllActivities(self) -> list[dict]:
         """获取全部garmin运动记录"""
         all_activities = []
+        new = int(cfg.GARMIN_NEWEST_NUM)
         start = 0
-        while True:
-            activities = self.getActivities(start=start, limit=100)
+        limit = new if new < 100 else 100
+        while start <= new:
+            activities = self.getActivities(start=start, limit=limit)
             if len(activities) > 0:  # pyright: ignore[reportArgumentType]
                 all_activities.extend(activities)  # pyright: ignore[reportArgumentType]
             else:
                 return all_activities
             start += 100
+        return all_activities
 
     def downloadActivity(self, id: str):
         """下载garmin运动记录"""
