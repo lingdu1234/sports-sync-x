@@ -193,6 +193,8 @@ class CorosClient:
         all_activities = []
         new = int(cfg.GARMIN_NEWEST_NUM)
         size = 100
+        if new < size:
+            size = new
         page = 1
         while (page - 1) * size <= new:
             activities = self.getActivities(size, page)

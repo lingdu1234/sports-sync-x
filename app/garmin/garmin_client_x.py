@@ -124,21 +124,13 @@ class GarminClient:
             # 检查上传是否成功
             if result and isinstance(result, dict):
                 detailed_result = result.get("detailedImportResult", {})
-                status_code = detailed_result.get("status", {})
-                code = status_code.get("code", "")
-                # 202 表示接受但可能重复
-                if code == "202" or code == "200":
-                    # 检查是否为重复上传
-                    upload_id = detailed_result.get("uploadId")
-                    if upload_id:
-                        print(f"上传成功: {file_path}, uploadId: {upload_id}")
-                        return True
-                    else:
-                        print(f"上传跳过(重复): {file_path}")
-                        return True  # 重复也算成功
+                upload_id = detailed_result.get("uploadId")
+                if upload_id and upload_id != "":
+                    print(f"上传成功: {file_path}, uploadId: {upload_id}")
+                    return True
                 else:
-                    print(f"上传返回非预期状态码: {code}")
-                    return False
+                    print(f"上传跳过(重复): {file_path}")
+                    return True  # 重复也算成功
             elif result is not None:
                 # 非dict结果，可能是字符串或其他
                 print(f"上传返回非预期格式: {type(result)}")
