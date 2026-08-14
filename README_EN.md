@@ -177,7 +177,7 @@ This project references and uses code from the following open-source projects:
 
 We also thank the following open-source libraries for their support:
 
-- **[garth](https://github.com/matin/garth)** - Garmin Connect API client
+- **[garminconnect](https://github.com/cyberjunky/python-garminconnect)** - Garmin Connect API client
 - **[SQLModel](https://github.com/tiangolo/sqlmodel)** - Python SQL ORM
 - **[fitdecode](https://github.com/polyvertex/fitdecode)** - FIT file decoder library
 - **[boto3](https://github.com/boto/boto3)** - AWS SDK for Python

@@ -1,17 +1,20 @@
-from app.utils.tools import Singleton
-from app.utils.sys_config import cfg
+import os
+from pathlib import Path
 from typing import Any
 import time
 from functools import wraps
-import os
-from enum import Enum, auto
-import requests
 
+from garminconnect import (
+    Garmin,
+    GarminConnectAuthenticationError,
+    GarminConnectConnectionError,
+    GarminConnectTooManyRequestsError,
+    GarminConnectInvalidFileFormatError,
+)
 
-from garth import Client as gmClient
-#  不要直接使用garth 要使用Client,否则两个数据会串
-
-from app.utils.const import GARMIN_URL_DICT, GarminAuthDomain, SportPlatform
+from app.utils.tools import Singleton
+from app.utils.sys_config import cfg
+from app.utils.const import GarminAuthDomain, SportPlatform
 
 
 class GarminClient:
@@ -20,57 +23,58 @@ class GarminClient:
         self.auth_domain = auth_domain
         self.email = email
         self.password = password
-        self.garthClient = gmClient()
         self.newestNum = int(newest_num)
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
-            "origin": GARMIN_URL_DICT.get("SSO_URL_ORIGIN"),
-            "nk": "NT",
-        }
+        self._logged_in = False
 
-    ## 登录装饰器
+        # 设置不同的 tokenstore 路径，避免 COM 和 CN 冲突
+        token_dir = "garmin_cn" if auth_domain == GarminAuthDomain.CN else "garmin_com"
+        self.tokenstore = str(Path.home() / ".garminconnect" / token_dir)
+        os.makedirs(self.tokenstore, exist_ok=True)
+
+        # 创建 Garmin 客户端
+        self.client = Garmin(
+            email=email,
+            password=password,
+            is_cn=(auth_domain == GarminAuthDomain.CN),
+        )
+
+    ## 登录装饰器 - 优化版，使用 try/except 而非预检查
     @staticmethod
     def login(f):
         @wraps(f)
         def wrapTheFunction(self, *args, **kwargs):
             try:
-                try:
-                    self.garthClient.username
-                except Exception as e:
-                    print(f"读取session错误:{e}")
+                if not self._logged_in:
                     self.login_fn()
-            except Exception:
-                print(f"garmin{self.auth_domain.value} is not loggin,re login...")
+                return f(self, *args, **kwargs)
+            except GarminConnectAuthenticationError:
+                print(f"garmin{self.auth_domain.value} 会话已过期,重新登录...")
                 self.login_fn()
-            return f(self, *args, **kwargs)
+                return f(self, *args, **kwargs)
 
         return wrapTheFunction
 
     def login_fn(self):
-        if self.auth_domain and self.auth_domain == GarminAuthDomain.CN:
-            self.garthClient.configure(domain="garmin.cn")
-        self.garthClient.login(self.email, self.password)
-        del self.garthClient.sess.headers["User-Agent"]
+        try:
+            self.client.login(self.tokenstore)
+            self._logged_in = True
+            print(f"garmin{self.auth_domain.value} 登录成功")
+        except GarminConnectTooManyRequestsError:
+            print(f"garmin{self.auth_domain.value} 请求过于频繁,稍后重试")
+            raise
+        except (GarminConnectAuthenticationError, GarminConnectConnectionError) as e:
+            print(f"garmin{self.auth_domain.value} 登录失败: {e}")
+            self._logged_in = False
+            raise
 
     @login
-    def download(self, path, **kwargs):
-        return self.garthClient.download(path, **kwargs)
-
-    @login
-    def connectapi(self, path, **kwargs):
-        return self.garthClient.connectapi(path, **kwargs)
-
     def getActivities(self, start: int, limit: int) -> Any:
         """
-        获取gaming运动记录
+        获取garmin运动记录
         :param
         start: int
         limit: int"""
-        params = {"start": str(start), "limit": str(limit)}
-        activities = self.connectapi(
-            path=GARMIN_URL_DICT["garmin_connect_activities"], params=params
-        )
-        return activities
+        return self.client.get_activities(start=start, limit=limit)
 
     def getAllActivities(self) -> list[dict]:
         """获取全部garmin运动记录"""
@@ -80,95 +84,74 @@ class GarminClient:
         limit = new if new < 100 else 100
         while start <= new:
             activities = self.getActivities(start=start, limit=limit)
-            if len(activities) > 0:  # pyright: ignore[reportArgumentType]
-                all_activities.extend(activities)  # pyright: ignore[reportArgumentType]
+            if activities and len(activities) > 0:
+                all_activities.extend(activities)
             else:
                 return all_activities
             start += 100
         return all_activities
 
+    @login
     def downloadActivity(self, id: str):
-        """下载garmin运动记录"""
-        download_fit_activity_url_prefix = GARMIN_URL_DICT[
-            "garmin_connect_fit_download"
-        ]
-        download_fit_activity_url = f"{download_fit_activity_url_prefix}/{id}"
-        response = self.download(download_fit_activity_url)
-        return response
+        """下载garmin运动记录 - 使用原始FIT格式"""
+        return self.client.download_activity(
+            id, dl_fmt=Garmin.ActivityDownloadFormat.ORIGINAL
+        )
 
     @login
-    def deleteActivity(self, id: str):
-        url_path = GARMIN_URL_DICT["garmin_connect_delete"]
-        delete_url = f"https://connectapi.{self.garthClient.domain}{url_path}/{id}"
+    def deleteActivity(self, id: str, max_retries: int = 3):
+        """删除activity，带最大重试限制"""
         try:
-            self.headers["Authorization"] = str(self.garthClient.oauth2_token)
-            resp = requests.delete(delete_url, headers=self.headers)
-            res_code = resp.status_code
-            if res_code == 204:
-                print(f"删除activity成功:{id}")
+            result = self.client.delete_activity(id)
+            print(f"删除activity成功:{id}")
+            return True
+        except Exception as e:
+            print(f"删除activity出错:{id} - {e}")
+            if max_retries > 0:
+                print(f"删除出错,1秒后将进行重试 (剩余{max_retries}次)")
+                time.sleep(1)
+                return self.deleteActivity(id, max_retries - 1)
             else:
-                print(f"删除activity出错:{id}")
-        except Exception:
-            print("删除出错,1秒后将进行重试")
-            time.sleep(1)
-            return self.deleteActivity(id)
+                print(f"删除activity失败,已达到最大重试次数")
+                return False
 
     @login
     def uploadActivity(self, file_path: str) -> bool:
         """Upload activity in fit format from file."""
-        # This code is borrowed from python-garminconnect-enhanced ;-)
-        file_base_name = os.path.basename(file_path)
-        file_extension = file_base_name.split(".")[-1]
-        allowed_file_extension = (
-            file_extension.upper() in ActivityUploadFormat.__members__
-        )
-
-        if allowed_file_extension:
-            try:
-                with open(file_path, "rb") as file:
-                    file_data = file.read()
-                    fields = {"file": (file_base_name, file_data, "text/plain")}
-
-                    url_path = GARMIN_URL_DICT["garmin_connect_upload"]
-                    upload_url = (
-                        f"https://connectapi.{self.garthClient.domain}{url_path}"
-                    )
-                    self.headers["Authorization"] = str(self.garthClient.oauth2_token)
-                    response = requests.post(
-                        upload_url, headers=self.headers, files=fields
-                    )
-                    print("resp:", response.status_code)
-                    print("resp:", response.json)
-                    res_code = response.status_code
-                    result = response.json()
-                    uploadId = result.get("detailedImportResult").get("uploadId")
-                    isDuplicateUpload = uploadId is None or uploadId == ""
-                    if res_code == 202 and not isDuplicateUpload:
+        try:
+            result = self.client.upload_activity(file_path)
+            # upload_activity 返回的是服务器响应数据
+            # 检查上传是否成功
+            if result and isinstance(result, dict):
+                detailed_result = result.get("detailedImportResult", {})
+                status_code = detailed_result.get("status", {})
+                code = status_code.get("code", "")
+                # 202 表示接受但可能重复
+                if code == "202" or code == "200":
+                    # 检查是否为重复上传
+                    upload_id = detailed_result.get("uploadId")
+                    if upload_id:
+                        print(f"上传成功: {file_path}, uploadId: {upload_id}")
                         return True
-                    elif (
-                        res_code == 409
-                        and result.get("detailedImportResult")
-                        .get("failures")[0]
-                        .get("messages")[0]
-                        .get("content")
-                        == "Duplicate Activity."
-                    ):
-                        return True
-            except Exception as e:
-                print("erorr:", e)
-
+                    else:
+                        print(f"上传跳过(重复): {file_path}")
+                        return True  # 重复也算成功
+                else:
+                    print(f"上传返回非预期状态码: {code}")
+                    return False
+            elif result is not None:
+                # 非dict结果，可能是字符串或其他
+                print(f"上传返回非预期格式: {type(result)}")
+                return True  # 假设成功
+            else:
+                print(f"上传失败: {file_path}")
                 return False
-            finally:
-                pass
+        except GarminConnectInvalidFileFormatError as e:
+            print(f"上传文件格式错误: {e}")
             return False
-        else:
+        except Exception as e:
+            print(f"上传出错: {file_path} - {e}")
             return False
-
-
-class ActivityUploadFormat(Enum):
-    FIT = auto()
-    GPX = auto()
-    TCX = auto()
 
 
 class GarminNoLoginException(Exception):
@@ -183,33 +166,13 @@ class GarminNoLoginException(Exception):
 @Singleton
 class GarminClientCOM(GarminClient):
     def __init__(self, email, password, auth_domain: GarminAuthDomain, newest_num):
-        print(f"正在初始化garmin{auth_domain.value}客户端")
-        self.auth_domain = auth_domain
-        self.email = email
-        self.password = password
-        self.garthClient = gmClient()
-        self.newestNum = int(newest_num)
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
-            "origin": GARMIN_URL_DICT.get("SSO_URL_ORIGIN"),
-            "nk": "NT",
-        }
+        super().__init__(email, password, auth_domain, newest_num)
 
 
 @Singleton
 class GarminClientCN(GarminClient):
     def __init__(self, email, password, auth_domain: GarminAuthDomain, newest_num):
-        print(f"正在初始化garmin{auth_domain.value}客户端")
-        self.auth_domain = auth_domain
-        self.email = email
-        self.password = password
-        self.garthClient = gmClient()
-        self.newestNum = int(newest_num)
-        self.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
-            "origin": GARMIN_URL_DICT.get("SSO_URL_ORIGIN"),
-            "nk": "NT",
-        }
+        super().__init__(email, password, auth_domain, newest_num)
 
 
 def get_garmin_client(platform: SportPlatform) -> GarminClient:

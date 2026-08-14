@@ -181,7 +181,7 @@ sports-sync-x/
 
 同时感谢以下开源库的支持：
 
-- **[garth](https://github.com/matin/garth)** - Garmin Connect API 客户端
+- **[garminconnect](https://github.com/cyberjunky/python-garminconnect)** - Garmin Connect API 客户端
 - **[SQLModel](https://github.com/tiangolo/sqlmodel)** - Python SQL ORM
 - **[fitdecode](https://github.com/polyvertex/fitdecode)** - FIT 文件解码库
 - **[boto3](https://github.com/boto/boto3)** - AWS SDK for Python
